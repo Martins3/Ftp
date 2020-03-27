@@ -5,9 +5,35 @@
 #include <cstdio>
 #include <iostream>
 #include <net/SSL.h>
+#include <sys/stat.h>
 
 using namespace eomaia::net;
 using namespace std;
+
+
+char* permissions(char *file){
+    struct stat st;
+    char *modeval = (char *)malloc(sizeof(char) * 9 + 1);
+    if(stat(file, &st) == 0){
+        mode_t perm = st.st_mode;
+        modeval[0] = (perm & S_IRUSR) ? 'r' : '-';
+        modeval[1] = (perm & S_IWUSR) ? 'w' : '-';
+        modeval[2] = (perm & S_IXUSR) ? 'x' : '-';
+        modeval[3] = (perm & S_IRGRP) ? 'r' : '-';
+        modeval[4] = (perm & S_IWGRP) ? 'w' : '-';
+        modeval[5] = (perm & S_IXGRP) ? 'x' : '-';
+        modeval[6] = (perm & S_IROTH) ? 'r' : '-';
+        modeval[7] = (perm & S_IWOTH) ? 'w' : '-';
+        modeval[8] = (perm & S_IXOTH) ? 'x' : '-';
+        modeval[9] = '\0';
+        return modeval;     
+    }
+    else{
+        return strerror(errno);
+    }   
+}
+
+
 
 EchoServer::EchoServer(IOEventLoop *loop, SocketAddr &addr)
     : TcpServer(loop, addr) {
@@ -20,7 +46,7 @@ void EchoServer::connectCallback(std::shared_ptr<TcpConnect> tcpConnect) {
   /* tcpConnect->write("I get the connection !\n"); */
 }
 
-void EchoServer::load() { kv["aaa"] = "bbb"; }
+void EchoServer::load() { kv["huxueshi"] = "pass1234"; }
 
 void EchoServer::messageCallback(std::shared_ptr<TcpConnect> tcpConnect,
                                  Buffer &buffer) {
@@ -34,27 +60,36 @@ void EchoServer::messageCallback(std::shared_ptr<TcpConnect> tcpConnect,
     char pass [50];
     msg.serverLogin(name, pass);
     printf("[Login] : %s %s\n", name, pass);
-    reply.LoginOk();
-    // TODO and reply LoginFailed
+
+    string k(name);
+    string v(pass);
+    if(kv[k] != v){
+      reply.LoginOk();
+    }else{
+      reply.LoginFailed();
+    } 
   }else if(cmd == Message::C_DOWNLOAD) {
     char t[50];
     sscanf(msg.getData(), "%s", t);
     reply.fileMsg(Message::S_DOWNLOAD, base, t);
   } else if(cmd == Message::C_UPLOAD){
-
    // FIXME change snippet into function : create a new io file
         char filename [50];
         sscanf(msg.getData(), "%s", filename);
-        auto file = std::fstream(base + filename, std::ios::out | std::ios::binary | std::ios::trunc);
+        auto path = base + filename;
+        auto file = std::fstream(path, std::ios::out | std::ios::binary | std::ios::trunc);
         if(file.is_open()){
           printf("write [%s]\n", msg.getData() - 3 + 100);
           file.write(msg.getData() - 3 + 100, msg.getLength() - 100);
           file.close();
+          
         }else {
           std::cout << "Server receive file failed !\n";
         }
     // FIXME end
+    // 返回一个的内容:
   }else if(cmd == Message::C_DIR){
+    // 读取base 下所有的内容
 
   }else{
     cout << "TODO\n";
@@ -63,69 +98,9 @@ void EchoServer::messageCallback(std::shared_ptr<TcpConnect> tcpConnect,
   tcpConnect->writeMsg(reply);
   reply.free();
   msg.free();
-
-  /* cout << "thread id:" << std::this_thread::get_id() << endl; */
-  /* string addr = tcpConnect->getAddr().toString(); */
-  /* string data; */
-  /* buffer.readAllAsString(data); */
-  /* cout << "receive data form " << addr << ":" << data << endl; */
-  /* base::Log::OUT(base::Log::Info) */
-  /*     << "receive data form " << addr << ":" << data; */
-  /* int cmd; */
-  /* switch (tcpConnect->clientState) { */
-  /* case TcpConnect::NOT_LOGIN: */
-  /*   sscanf(data.c_str(), "%d", &cmd); */
-  /*   if (cmd != 111) { */
-  /*     tcpConnect->write("UNPRIVILEGED_OP"); */
-  /*   } else { */
-  /*     char name[256]; */
-  /*     char pass[256]; */
-  /*     sscanf(data.c_str() + 3, "%s %s", name, pass); */
-  /*     string n(name); */
-  /*     string p(pass); */
-
-  /*     cout << "name : " <<  n << "pass" << p << endl; */
-  /*     cout << "name : " << kv[n] << endl; */
-
-  /*     if (kv[n] != p) { */
-  /*       tcpConnect->write("LOGIN_FAILED"); */
-  /*     } else { */
-  /*       tcpConnect->write("LOGIN_OK"); */
-  /*       cout << "So, does it success ?" << endl; */
-  /*     } */
-  /*   } */
-  /*   break; */
-  /* case TcpConnect::LOGIN: */
-  /*   if (data == "222") { */
-  /*     // TODO get data .... */
-  /*   } else if (data == "333") { */
-  /*     tcpConnect->clientState = TcpConnect::UPLOADING; */
-  /*     tcpConnect->write("UPLOAD_OK"); */
-  /*   } else { */
-  /*     char filename[256]; */
-  /*     if (sscanf(data.c_str(), "%d %s", &cmd, filename) == 2) { */
-  /*       if (cmd == 444) { */
-
-  /*         // TODO change this into configuation */
-  /*         FILE *file = fopen("/tmp/", "r+"); */
-
-  /*         if (file == NULL) { */
-  /*           cerr << "you should avoid this purposely" << endl; */
-  /*         } else { */
-  /*         } */
-  /*       } */
-  /*     } */
-  /*   } */
-  /*   break; */
-  /* case TcpConnect::UPLOADING: */
-  /*   // TODO 输入成为文件 */
-  /* default: */
-  /*   tcpConnect->write("ERR\n"); */
-  /* } */
 }
 
 void EchoServer::writeCompletCallback(std::shared_ptr<TcpConnect> tcpConnect) {
-  cout << "这里会输出吗 ?" << endl;
   cout << "thread id:" << std::this_thread::get_id() << endl;
   string addr = tcpConnect->getAddr().toString();
   cout << addr << ":"

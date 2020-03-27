@@ -1,3 +1,5 @@
+#ifndef TCPCLIENT_H_BF4OPCDJ
+#define TCPCLIENT_H_BF4OPCDJ
 #include <base/LogInterface.h>
 #include <cstring>
 #include <net/IOEventLoop.h>
@@ -8,6 +10,8 @@
 #include <thread>
 #include <iostream>
 
+class LoginDialog;
+class MainWindow;
 namespace eomaia {
 namespace net {
 
@@ -31,7 +35,6 @@ public:
         event(new IOEvent(loop, socket->getFd())), state(Disconnected) {
     eventLoop->addEvent(event);
     waiting_for_file = false;
-    // TODO 为什么不需要 bind 了 ?
     event->setReadFunc(std::bind(&TcpClient::readEvent, this));
   }
 
@@ -44,71 +47,15 @@ public:
     state = Connected;
   }
 
-  // 1. 形成一个消息队列，将数据拷贝到 Vector<u8> 中间，然后 notify_one
-  //    1. 解决的问题在于如果之前没有任何消息出现
-  // 2. 收到
-  void readEvent() {
-    // 应该是只有存在内容触发 epoll 的 !
-    printf("readEvent trigger\n");
 
-    int error = 0;
-    /* int n = readBuf.readFromIO(event->getFd(), error); */
-    int n = readBuf.readFromIO(socket.get(), error);
-    if (n > 0) {
-      auto msg = readBuf.readAllAsMessage();
-      auto cmd = msg.getCmd();
-
-      if (cmd == Message::S_LOGIN_OK) {
-        printf("Server tell us : Login Ok\n");
-        // TODO to Qt
-      } else if(cmd == Message::S_DOWNLOAD) {
-        // FIXME : merge the code !
-        const std::string base = "/home/shen/Core/ftp/eomaia/www/";
-        char filename [50];
-        sscanf(msg.getData(), "%s", filename);
-        auto file = std::fstream(base + filename, std::ios::out | std::ios::binary | std::ios::trunc);
-        std::cout << "try open file " << base + filename << std::endl;
-        if(file.is_open()){
-          printf("write [%s]\n", msg.getData() - 3 + 100);
-          file.write(msg.getData() - 3 + 100, msg.getLength() - 100);
-          file.close();
-        }else {
-          std::cout << "client receive file failed !\n";
-        }
-      } else{
-        printf("Client : todo\n");
-      }
-
-      /* std::string data; */
-      /* readBuf.readAllAsString(data); // TODO 负责解析数据，然后告知Qt
-       * 系统的插件 */
-      /* std::cout << data << std::endl; */
-      /* if (!waiting_for_file) { */
-      /*   std::unique_lock<std::mutex> lock(mutex); */
-      /*   if (data == "LOGIN_OK") { */
-      /*     response = LOGIN_OK; */
-      /*     std::cout << "I am notify_one with Login in OK" << std::endl; */
-      /*     ; */
-      /*   } else if (data == "LOGIN_FAILED") { */
-      /*     response = LOGIN_FAILED; */
-      /*   } else if (data == "UNPRIVILEGED_OP") { */
-      /*     // TODO */
-      /*   } */
-      /*   condtion.notify_one(); */
-      /* } else { */
-      /*   // TODO buffer into file */
-      /*   std::unique_lock<std::mutex> lock(mutex); */
-      /*   response = DOWNLOAD_OK; */
-      /*   condtion.notify_one(); */
-      /* } */
-
-    } else if (n == 0) {
-      closeEvent();
-    } else {
-      base::Log::OUT(base::Log::Error)
-          << "TcpConnection::handleRead error :" << std::to_string(error);
-      closeEvent();
-    }
+private:
+ LoginDialog * login;
+ MainWindow * window;
+public:
+  void readEvent();
+  void setupUI(LoginDialog * l, MainWindow * m){
+    login = l;
+    window = m;
   }
 
   // 难道在此处需要部署 SSL 的close callback 吗 ?
@@ -236,3 +183,4 @@ private:
 };
 } // namespace net
 } // namespace eomaia
+#endif /* end of include guard: TCPCLIENT_H_BF4OPCDJ */

@@ -6,6 +6,10 @@ LoginDialog::LoginDialog(QWidget *parent) : QDialog(parent) {
   setModal(true);
 }
 
+void LoginDialog::message(std::string msg){
+  setWindowTitle(QString::fromStdString(msg));
+}
+
 void LoginDialog::setUpGUI() {
   // set up the layout
   QGridLayout *formGridLayout = new QGridLayout(this);
@@ -80,16 +84,17 @@ void LoginDialog::slotAcceptLogin() {
   QString password = editPassword->text();
   int index = comboUsername->currentIndex();
 
-  emit acceptLogin(username, // current username
-                   password, // current password
-                   index     // index in the username list
-  );
-  // TODO 1. 文件 发送
-  // client.Login
-  //
+  QByteArray ba = username.toLocal8Bit();
+  QByteArray ba2 = password.toLocal8Bit();
 
+  netManager->login(ba.data(), ba2.data());
+
+  /* emit acceptLogin(username, // current username */
+  /*                  password, // current password */
+  /*                  index     // index in the username list */
+  /* ); */
   // close this dialog
-  close();
+  /* close(); */
 }
 
 void LoginDialog::setUsernamesList(const QStringList &usernames) {

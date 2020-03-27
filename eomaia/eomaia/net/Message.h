@@ -66,7 +66,7 @@ public:
     S_LOGIN_OK,
     S_LOGIN_FAILED,
     S_DOWNLOAD,
-    // S_UPLOAD, // 不做恢复
+    S_UPLOAD, // 总是成功
   };
 
   enum CMD getCmd() {
