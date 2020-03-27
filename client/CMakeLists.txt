@@ -24,6 +24,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #    endif()
 #endif()
 
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -g -m64")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -lssl -lcrypto -m64 -lpthread")
+
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 # 如何修改为相对路径 ?
@@ -39,6 +42,7 @@ if(ANDROID)
 else()
   add_executable(ftpClient
     main.cpp
+    LoginDialog.cpp
     mainwindow.cpp
     mainwindow.h
     mainwindow.ui

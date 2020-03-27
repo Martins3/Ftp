@@ -202,6 +202,7 @@ public:
   }
 };
 
+/**
 int testMain(int argc, char *argv[]) {
   SSLOperation::initClientCTX();
   FtpClient client;
@@ -229,3 +230,4 @@ int testMain(int argc, char *argv[]) {
   }
   return 0;
 }
+*/
