@@ -36,19 +36,19 @@ public slots:
   }
 
   void upload() {
-    QString  f = fileName->text();
-    qDebug() << "main window upload\n" << f;
+    QString f = fileName->text();
+    qDebug() << "Client : upload" << f;
     netManager->upload(f.toStdString());
   }
 
   void download() {
-    QString  f = fileName->text();
-    qDebug() << "main window download\n" << f;
+    QString f = fileName->text();
+    qDebug() << "client : download" << f;
     netManager->download(f.toStdString());
   }
 
   void dir() {
-    qDebug() << "main window dir\n" << fileName->text();
+    qDebug() << "client : dir" << fileName->text();
     netManager->getDir();
   }
 
@@ -74,12 +74,17 @@ public:
 
   void message(std::string msg) { setWindowTitle(QString::fromStdString(msg)); }
 
-  void clearTable() { listWidget->clear(); }
+  void clearTable() {
+    listWidget->clear();
+    char  name[50];
+    sprintf(name, "%-20s|%-15s|%-10s", "Name", "Priv", "Size");
+    QString text(name);
+    new QListWidgetItem(text, listWidget);
+  }
 
   void addOneFile(const char *f) {
     QString text(f);
     new QListWidgetItem(text, listWidget);
   }
-
 };
 #endif // MAINWINDOW_H

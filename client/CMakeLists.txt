@@ -8,7 +8,8 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_CXX_STANDARD 11)
+# TODO 那些函数是 CMAKE 的内置函数，这个效果为什么 CMAKE_CXX_FLAGS 中间的参数 ?
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # QtCreator supports the following variables for Android, which are identical to qmake Android variables.
@@ -25,12 +26,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #endif()
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -g -m64")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -lssl -lcrypto -m64 -lpthread")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -g -lssl -lcrypto -m64 -lpthread")
 
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
-# 如何修改为相对路径 ?
-
+# TODO 如何修改为相对路径 ?
 include_directories("/home/shen/Core/homework/eomaia/eomaia")
 if(ANDROID)
   add_library(ftpClient SHARED
@@ -44,6 +44,7 @@ else()
     main.cpp
     LoginDialog.cpp
     mainwindow.cpp
+    TcpClient.cpp
     mainwindow.h
     mainwindow.ui
   )

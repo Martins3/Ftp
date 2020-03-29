@@ -43,10 +43,19 @@ public:
   int clientState;
   enum ClientState { NOT_LOGIN, LOGIN, UPLOADING };
 
+  std::string getUserName(){
+    return userName;
+  }
+
+  void setUserName(std::string n){
+    userName = n;
+  }
+
 private:
   IOEventLoop *loop;
   SocketAddr socketAddr;
   std::string name;
+  std::string userName;
   std::shared_ptr<Socket> socket;
   std::shared_ptr<IOEvent> event;
 

@@ -1,4 +1,3 @@
-
 #ifndef MESSAGE_H_POSYNQI3
 #define MESSAGE_H_POSYNQI3
 #include <cstring>
@@ -6,6 +5,10 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <sys/stat.h>
+#include <string>
+#include <iostream>
+#include <filesystem>
 
 namespace eomaia {
 namespace net {
@@ -24,6 +27,7 @@ class Message {
   void alloc(uint32_t size) {
     data = (char *)malloc(size);
     free_base = data;
+    length = size;
     memset(data, 0, size);
   }
 
@@ -41,18 +45,18 @@ public:
   void clientLogin(const char *name, const char *password) {
     alloc(sizeof(char) * 100);
     // 没有必要固定长度 ！
-    length = sprintf(data, "%-3d %s %s", C_LOGIN, name, password);
+    sprintf(data, "%-3d %s %s", C_LOGIN, name, password);
   }
 
   void clientDir() {
-    alloc(sizeof(char) * 4);
-    length = sprintf(data, "%-3d", C_DIR);
+    alloc(sizeof(char) * 100);
+    sprintf(data, "%-3d", C_DIR);
   }
 
   void clientDownload(std::string filename) {
     alloc(sizeof(char) * 100);
     // length 重新赋值只会导致 client 出现错误
-    length = sprintf(data, "%-3d %s", C_DOWNLOAD, filename.c_str());
+    sprintf(data, "%-3d %s", C_DOWNLOAD, filename.c_str());
   }
 
   // 前面三个字节 : 利用 scanf HHHHH
@@ -81,32 +85,73 @@ public:
   }
 
   void LoginOk() {
-    alloc(sizeof(char) * 4);
-    length = sprintf(data, "%-3d", S_LOGIN_OK);
+    alloc(sizeof(char) * 100);
+    sprintf(data, "%-3d", S_LOGIN_OK);
   }
 
   void LoginFailed() {
-    alloc(sizeof(char) * 4);
+    alloc(sizeof(char) * 100);
     length = sprintf(data, "%-3d", S_LOGIN_FAILED);
   }
-
-    /* std::string path = base + filename; */
-    /* auto file = std::fstream(base + filename, std::ios::in |
-     * std::ios::binary); */
-    /* std::streamsize size = file.tellp(); */
-    /* file.seekg(0, std::ios::beg); */
 
   void fileMsg(enum CMD cmd, std::string base, std::string filename) {
     std::ifstream file(base + filename, std::ios::binary | std::ios::ate);
     std::streamsize size = file.tellg();
     file.seekg(0, std::ios::beg);
 
-    length = sizeof(char) * 100 + size;
-    alloc(length);
+    alloc(sizeof(char) * 100 + size);
     sprintf(data, "%-3d %s", cmd, filename.c_str());
     file.read(data + 100, size);
     file.close();
     printf("file content : [%s]", data + 100);
+  }
+
+  void permissions(char *output, std::string base, std::string filename) {
+    std::string path = base + filename;
+    std::ifstream file(path, std::ios::binary | std::ios::ate);
+    std::streamsize size = file.tellg();
+
+    struct stat st;
+    char *modeval = (char *)malloc(sizeof(char) * 9 + 1);
+    if (stat(path.c_str(), &st) == 0) {
+      mode_t perm = st.st_mode;
+      modeval[0] = (perm & S_IRUSR) ? 'r' : '-';
+      modeval[1] = (perm & S_IWUSR) ? 'w' : '-';
+      modeval[2] = (perm & S_IXUSR) ? 'x' : '-';
+      modeval[3] = (perm & S_IRGRP) ? 'r' : '-';
+      modeval[4] = (perm & S_IWGRP) ? 'w' : '-';
+      modeval[5] = (perm & S_IXGRP) ? 'x' : '-';
+      modeval[6] = (perm & S_IROTH) ? 'r' : '-';
+      modeval[7] = (perm & S_IWOTH) ? 'w' : '-';
+      modeval[8] = (perm & S_IXOTH) ? 'x' : '-';
+      modeval[9] = '\0';
+
+      sprintf(output, "%-20s|%-15s|%-10ld", filename.c_str(), modeval, size);
+      ::free(modeval);
+    } else {
+      std::cerr << "server stat failed " << std::endl;
+    }
+  }
+
+  void server_upload(enum CMD cmd, std::string base, std::string filename) {
+    alloc(sizeof(char) * 100 + 3);
+    sprintf(data, "%-3d", cmd);
+    permissions(data + 3, base, filename);
+  }
+
+  void server_dir(enum CMD cmd, std::string path){
+    int size = 0;
+    for (const auto & entry : std::filesystem::directory_iterator(path)){
+      size ++;
+    }
+    alloc(sizeof(char) * 100 * size + 3);
+    sprintf(data, "%-3d", cmd);
+    char * ptr = data + 3;
+    for (const auto & entry : std::filesystem::directory_iterator(path)){
+      permissions(ptr, path, entry.path().filename());
+      printf("%s", ptr);
+      ptr += 100;
+    }
   }
 };
 } // namespace net

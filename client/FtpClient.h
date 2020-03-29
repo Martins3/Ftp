@@ -78,7 +78,7 @@ public:
   void upload(string path) {
     Message msg;
     // FIXME !
-    const std::string base = "/home/shen/Core/ftp/eomaia/www/";
+    const std::string base = "/home/shen/Downloads/client/";
     msg.fileMsg(Message::C_UPLOAD, base, path);
     addMsg(msg);
   }

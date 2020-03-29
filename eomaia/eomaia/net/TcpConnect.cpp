@@ -142,7 +142,7 @@ void TcpConnect::write(const void *data, uint32_t length) {
   if (!event->isWriting() && writeBuf.isEmpty()) {
     /* n = SocketOperation::write(event->getFd(), data, length); */
     n = socket->write(data, length);
-    cout << "wocket write" << n << "origin " << length << endl;
+    cout << "server : socket write => " << n << " origin => " << length << endl;
     if (n >= 0) {
       remaining = length - n;
       if (remaining == 0 && writeCompleteCallback) {

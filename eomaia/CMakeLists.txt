@@ -18,7 +18,7 @@ SET(OUTPUT_DIR
 
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -g -m64 -O2")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -lssl -lcrypto -m64 -O2")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -g -lssl -lcrypto -m64 -O2")
 
 
 INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORY})

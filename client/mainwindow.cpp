@@ -31,19 +31,19 @@ void MainWindow::setupUI(QMainWindow *MainWindow) {
   buttons->addButton(QDialogButtonBox::Ok);
   buttons->addButton(QDialogButtonBox::Cancel);
   buttons->addButton(QDialogButtonBox::Abort);
-  buttons->button(QDialogButtonBox::Abort)->setText(tr("dir"));
   buttons->button(QDialogButtonBox::Ok)->setText(tr("upload"));
   buttons->button(QDialogButtonBox::Cancel)->setText(tr("download"));
+  buttons->button(QDialogButtonBox::Abort)->setText(tr("dir"));
 
   // connects slots
+  connect(buttons->button(QDialogButtonBox::Ok), SIGNAL(clicked()), this,
+          SLOT(upload()));
+  connect(buttons->button(QDialogButtonBox::Cancel), SIGNAL(clicked()), this,
+          SLOT(download()));
   connect(buttons->button(QDialogButtonBox::Abort), SIGNAL(clicked()), this,
           SLOT(dir()));
 
-  connect(buttons->button(QDialogButtonBox::Cancel), SIGNAL(clicked()), this,
-          SLOT(upload()));
 
-  connect(buttons->button(QDialogButtonBox::Ok), SIGNAL(clicked()), this,
-          SLOT(download()));
 
   fileName = new QLineEdit(this);
   labelPassword = new QLabel(this);

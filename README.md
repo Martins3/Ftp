@@ -26,6 +26,30 @@ c/ssl.cpp 进行测试，效果惊人。
 4. Socket 对象是什么时候注销的 ?
     1. 除非理解 shared_ptr 
 
+5. server 的 crash 会造成 client 的:
+```
+readEvent trigger
+readEvent trigger
+readEvent trigger
+readEvent trigger
+readEvent trigger
+readEvent trigger
+readEvent trigger
+readEvent trigger
+readEvent trigger
+readEvent trigger
+readEvent trigger
+readEvent trigger
+readEvent trigger
+readEvent trigger
+readEvent trigger
+readEvent trigger
+readEvent trigger
+readEvent trigger
+readEvent trigger
+readEvent trigger
+```
+
 
 
 https://stackoverflow.com/questions/10175812/how-to-create-a-self-signed-certificate-with-openssl
@@ -41,7 +65,6 @@ A 的私钥。
 4.  A 的公钥加上⼀些 A 的个⼈信息，被 O 私钥签名之后,
 就得到 A 的证书，因为⼈⼈都有 O 的公钥，所以⼈⼈都
 可解密 A 的证书，换⾔之，证书⾥必有公钥。
-
 
 
 ## 设计

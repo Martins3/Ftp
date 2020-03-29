@@ -3,6 +3,7 @@
 
 #include <net/TcpServer.h>
 #include <unordered_map>
+#include <fstream>
 
 class EchoServer : public eomaia::net::TcpServer {
 public:
@@ -18,6 +19,7 @@ public:
 private:
   std::unordered_map<std::string, std::string> kv;
   void load();
+  std::ofstream log;
 };
 
 #endif // EOMAIA_DOME_ECHOSERVER

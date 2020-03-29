@@ -87,8 +87,8 @@ void LoginDialog::slotAcceptLogin() {
   QByteArray ba = username.toLocal8Bit();
   QByteArray ba2 = password.toLocal8Bit();
 
+  printf("client login : [%s] [%s]", ba.data(), ba2.data());
   netManager->login(ba.data(), ba2.data());
-
   /* emit acceptLogin(username, // current username */
   /*                  password, // current password */
   /*                  index     // index in the username list */
